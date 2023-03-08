@@ -1,0 +1,19 @@
+{
+    "distSpecVersion": "1.0.1",
+    "storage": {
+        "rootDirectory": "/Users/ivan.wallis/zotstorage"
+    },
+    "http": {
+        "address": "127.0.0.1",
+        "port": "5015",
+        "auth": {
+            "htpasswd": {
+                "path": "/Users/ivan.wallis/Documents/Venafi/CodeSign\ Protect/zot/htpasswd"
+            }
+        }
+    },
+    "log": {
+        "level": "debug"
+    }
+}
+
