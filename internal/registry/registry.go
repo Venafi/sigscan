@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ecrpublic"
 	"github.com/docker/hub-tool/pkg/hub"
 	"github.com/google/go-github/v49/github"
 	"github.com/venafi/sigscan/internal/credential"
@@ -25,6 +27,7 @@ const (
 	GCR        = "gcr.io"
 	GAR        = "docker.pkg.dev"
 	ECR_PUBLIC = "public.ecr.aws"
+	AWS_REGION = "us-east-1"
 )
 
 // Remote options struct.
@@ -230,8 +233,29 @@ func FindRepositories(ctx context.Context, org string, username string, password
 		return fn(repos)
 
 	} else if strings.Contains(regclient.Reference.Host(), ECR_PUBLIC) {
-		fmt.Printf(ECR_PUBLIC + " is currently not a supported registry")
-		return fn([]string{""})
+		var repos []string
+
+		// Using the SDK's default configuration, loading additional config
+		// and credentials values from the environment variables, shared
+		// credentials, and shared configuration files
+
+		// Per https://github.com/aws/aws-cli/issues/5917, ECR-public actions are only supported in us-east-1
+		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(AWS_REGION))
+		if err != nil {
+			return fmt.Errorf(err.Error())
+		}
+
+		svc := ecrpublic.NewFromConfig(cfg)
+		rep, err := svc.DescribeRepositories(context.Background(), &ecrpublic.DescribeRepositoriesInput{})
+		if err != nil {
+			return fmt.Errorf(err.Error())
+		}
+
+		for _, r := range rep.Repositories {
+			repos = append(repos, strings.TrimPrefix(*r.RepositoryUri, ECR_PUBLIC+"/"))
+		}
+
+		return fn(repos)
 
 	} else {
 		return regclient.Repositories(ctx, last, fn)

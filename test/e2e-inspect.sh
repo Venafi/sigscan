@@ -12,14 +12,16 @@
 # cosign sign --key "pkcs11:slot-id=0;object=vsign-rsa2048-cert?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" us-west1-docker.pkg.dev/jetstack-ivan-wallis/iwallis-test/net-monitor:v1
 # notation sign --key "vsign-ztpki-rsa2048" us-west1-docker.pkg.dev/jetstack-ivan-wallis/iwallis-test/net-monitor:v1
 # gcr.io
-# cosign sign --key "pkcs11:slot-id=0;object=vsign-rsa2048-cert?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" gcr.io/jetstack-ivan-wallis/net-monitor:v1
+# cosign sign --tlog-upload=fase --key "pkcs11:slot-id=0;object=vsign-rsa2048-cert?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" gcr.io/jetstack-ivan-wallis/net-monitor:v1
 # echo "https://gcr.io" | docker-credential-gcr get
 ../sigscan inspect us-west1-docker.pkg.dev --output pretty --token
 
 # ECR Public
 # aws ecr-public get-login-password --region us-east-1 --profile iwallis | docker login --username AWS --password-stdin public.ecr.aws
-# docker tag localhost:5005/ubuntu:latest public.ecr.aws/h6x3f5j6/iwallis-test
-# docker push public.ecr.aws/h6x3f5j6/iwallis-test
+# docker tag localhost:5005/ubuntu:latest public.ecr.aws/v3y9q2u6/net-monitor:v1
+# docker push public.ecr.aws/v3y9q2u6/net-monitor:v1
+# cosign sign --key "pkcs11:slot-id=0;object=vsign-rsa2048-cert?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" public.ecr.aws/v3y9q2u6/net-monitor:v1
+../sigscan inspect public.ecr.aws --output pretty
 
 # ECR Private
 # aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 427380916706.dkr.ecr.us-west-1.amazonaws.com

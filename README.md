@@ -10,18 +10,18 @@ For OCI Artifacts and NotaryV2 signatures we are following the [Signature Specif
 Sigscan is made available under the Apache 2.0 license, see [LICENSE.txt](LICENSE.txt).
 
 #### Registry Support
-| Name | Supported/Tested |
-| ---- | --------- |
-| ghcr.io | :heavy_check_mark: |
-| docker.io | :heavy_check_mark: |
-| ACR | :heavy_check_mark: |
-| Docker Registry V2 | :heavy_check_mark: |
-| ORAS Project registry v1.0.0-rc.3 | :heavy_check_mark: |
-| Zot v1.4.3 | :heavy_check_mark: |
-| ECR (private) | :heavy_check_mark: |
-| ECR (public) | :x: |
-| GCR (public) | :heavy_check_mark: |
-| GCR (private) | :x: |
+| Name | Compatibility | Notes |
+| ---- | --------- | ---- |
+| ghcr.io | :heavy_check_mark: | |
+| docker.io | :heavy_check_mark: | |
+| ACR | :heavy_check_mark: | |
+| Docker Registry V2 | :heavy_check_mark: | |
+| ORAS Project registry v1.0.0-rc.3 | :heavy_check_mark: | |
+| Zot v1.4.3 | :heavy_check_mark: | |
+| ECR (private) | :heavy_check_mark: | |
+| ECR (public) | :heavy_check_mark: | us-east-1 only per AWS CLI [issue](https://github.com/aws/aws-cli/issues/5917) |
+| GCR (public) | :heavy_check_mark: | |
+| GCR (private) | :x: | |
 
 ## Installation
 
@@ -53,8 +53,15 @@ go install github.com/venafi/sigscan@latest
 
 Sigscan can be used to list out details of all the signed container images in the registry:
 
+*Make sure you are authenticated to the registry as needed.*
+
 ```shell
 $ sigscan inspect myregistry --output pretty --username myuser --password supersecretpassword
+```
+
+Inspecting an organization's ECR public repositories:
+```shell
+$ sigscan inspect public.ecr.aws --output pretty
 ```
 
 Inspecting an organization's GHCR repositories:
