@@ -40,7 +40,7 @@ type Remote struct {
 	PasswordFromStdin bool
 	Password          string
 
-	resolveFlag        []string
+	//resolveFlag        []string
 	resolveDialContext func(dialer *net.Dialer) func(context.Context, string, string) (net.Conn, error)
 }
 
@@ -69,13 +69,13 @@ func (opts *Remote) tlsConfig() (*tls.Config, error) {
 }
 
 // isPlainHttp returns the plain http flag for a given registry.
-func (opts *Remote) isPlainHttp(registry string) bool {
+/*func (opts *Remote) isPlainHttp(registry string) bool {
 	host, _, _ := net.SplitHostPort(registry)
 	if host == "localhost" || registry == "localhost" {
 		return true
 	}
 	return opts.PlainHTTP
-}
+}*/
 
 // Credential returns a credential based on the remote options.
 func (opts *Remote) Credential() auth.Credential {
