@@ -1,11 +1,12 @@
 # Sigscan
 
-Sigscan is a tool to discover and report signed container images within a registry.  Any OCI-compliant registry is supported for Sigstore/cosign signatures as well as registries that support OCI artifacts (currently [ACR](https://azure.microsoft.com/en-us/products/container-registry), [ECR](https://aws.amazon.com/ecr/), [oras-project/registry](https://github.com/oras-project/distribution/pkgs/container/registry), and [Zot](https://zotregistry.io))
+Sigscan is a tool to primarily discover and report signed container images within a registry.  Any OCI-compliant registry is supported for Sigstore/cosign signatures as well as registries that support OCI artifacts (currently [ACR](https://azure.microsoft.com/en-us/products/container-registry), [ECR](https://aws.amazon.com/ecr/), [oras-project/registry](https://github.com/oras-project/distribution/pkgs/container/registry), and [Zot](https://zotregistry.io))
 
 For Sigstore/cosign signatures we are following the [Signature spec](https://github.com/sigstore/cosign/blob/main/specs/SIGNATURE_SPEC.md) and detecting any optional PEM-encoded x509 certificates.
 
 For OCI Artifacts and NotaryV2 signatures we are following the [Signature Specification](https://github.com/notaryproject/notaryproject/blob/main/specs/signature-specification.md) and detecting any Signature Manifest where artifact type is `application/vnd.cncf.notary.signature`.  From there we are extracting `annotations` that have the `io.cncf.notary.x509chain.thumbprint#S256` metadata.
 
+Sigscan can also be used to scan the filesystem to discover and report on signed JAR as well as EXE files.  Sigscan will extract the signer certificate subjectname as well as the countersigner/timestamp (if available) subjectname.
 
 Sigscan is made available under the Apache 2.0 license, see [LICENSE.txt](LICENSE.txt).
 
@@ -22,6 +23,12 @@ Sigscan is made available under the Apache 2.0 license, see [LICENSE.txt](LICENS
 | ECR (public) | :heavy_check_mark: | us-east-1 only per AWS CLI [issue](https://github.com/aws/aws-cli/issues/5917) |
 | GCR (public) | :heavy_check_mark: | |
 | GCR (private) | :x: | |
+
+#### FileType Support
+| Type | Compatibility | Notes |
+| ---- | ------------- | ----- |
+| JAR  | :heavy_check_mark: | |
+| EXE | :heavy_check_mark: | |
 
 ## Installation
 
@@ -56,26 +63,33 @@ Sigscan can be used to list out details of all the signed container images in th
 *Make sure you are authenticated to the registry as needed.*
 
 ```shell
-$ sigscan inspect myregistry --output pretty --username myuser --password supersecretpassword
+$ sigscan repo myregistry --output pretty --username myuser --password supersecretpassword
 ```
 
 Inspecting an organization's ECR public repositories:
 ```shell
-$ sigscan inspect public.ecr.aws --output pretty
+$ sigscan repo public.ecr.aws --output pretty
 ```
 
 Inspecting an organization's GHCR repositories:
 
 ```shell
-$ sigscan inspect ghcr.io --output pretty --org myorg --username myuser --password supersecretpassword
+$ sigscan repo ghcr.io --output pretty --org myorg --username myuser --password supersecretpassword
 ```
 
 Export them for further audit:
 ```shell
-$ sigscan inspect localhost:5010 --output json --insecure | jq '.registry.signatures[].subjectname'
+$ sigscan repo localhost:5010 --output json --insecure | jq '.registry.signatures[].subjectname'
 "CN=dev.venafidemo.com,OU=Solution Architects,O=Venafi\\, Inc.,L=San Jose,ST=CA,C=US"
 "CN=dev.venafidemo.com,OU=Solution Architects,O=Venafi\\, Inc.,L=San Jose,ST=CA,C=US"
 ```
+
+Inspecting the filesystem for signed artifacts
+```shell
+$ sigscan fs test/tempdir1/ test/tempdir2 --output json | jq
+```
+
+*EXE and Jar file types are currently supported*
 
 ## Authentication
 
