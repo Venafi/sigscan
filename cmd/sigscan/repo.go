@@ -3,7 +3,9 @@ package sigscan
 import (
 	"context"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
+	"os"
 	"runtime"
 	"runtime/debug"
 	"strings"
@@ -25,6 +27,7 @@ import (
 	"github.com/venafi/sigscan/internal/output"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	_ "github.com/sassoftware/relic/v7/signers/pecoff"
 	"oras.land/oras-go/v2/content"
 	orasreg "oras.land/oras-go/v2/registry"
 	oras "oras.land/oras-go/v2/registry/remote"
@@ -51,12 +54,13 @@ type Info struct {
 	Debug      *debug.BuildInfo `json:"debug,omitempty"` // build info debugging data
 }
 
-type InspectOptions struct {
+type RepoInspectOptions struct {
 	Username     string
 	Password     string
 	AccessToken  string
 	Insecure     bool // HTTP vs HTTPS
 	Organization string
+	Dir          string
 }
 
 type repositoryOptions struct {
@@ -140,7 +144,18 @@ func parseRepoPath(opts *repositoryOptions, arg string) error {
 	return nil
 }
 
-func newInspect(ctx context.Context) *cobra.Command {
+func showCert(blob []byte, seen map[string]bool) {
+	if seen[string(blob)] {
+		return
+	}
+	seen[string(blob)] = true
+	_ = pem.Encode(os.Stdout, &pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: blob,
+	})
+}
+
+func newRepoInspect(ctx context.Context) *cobra.Command {
 
 	var (
 		outOpts    *options.Output
@@ -149,7 +164,7 @@ func newInspect(ctx context.Context) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "inspect [flags] image",
+		Use:   "repo [flags] image",
 		Short: "TBD",
 		Long:  `TBD`,
 		PreRunE: func(_ *cobra.Command, args []string) error {
@@ -168,7 +183,7 @@ func newInspect(ctx context.Context) *cobra.Command {
 			insecure, _ := cmd.Flags().GetBool("insecure")
 			org, _ := cmd.Flags().GetString("org")
 
-			var out output.JSONOutput
+			var out output.RepoJSONOutput
 			var opts repositoryOptions
 
 			out.Registry = host
@@ -259,13 +274,13 @@ func newInspect(ctx context.Context) *cobra.Command {
 
 								if outOpts.Mode == options.OutputModeJSON {
 									if sig.Cert != nil {
-										out.Signatures.Entries = append(out.Signatures.Entries, output.JSONSignature{
+										out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
 											Path:               repo + ":" + tag,
 											Digest:             string(descriptor.Digest),
 											CertificateSubject: sig.Cert.Subject.String(),
 										})
 									} else {
-										out.Signatures.Entries = append(out.Signatures.Entries, output.JSONSignature{
+										out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
 											Path:               repo + ":" + tag,
 											Digest:             string(descriptor.Digest),
 											CertificateSubject: "Unknown KeyPair",
@@ -299,7 +314,7 @@ func newInspect(ctx context.Context) *cobra.Command {
 									}
 
 									if outOpts.Mode == options.OutputModeJSON {
-										out.Signatures.Entries = append(out.Signatures.Entries, output.JSONSignature{
+										out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
 											Path:                repo + ":" + tag,
 											Digest:              string(descriptor.Digest),
 											NotaryV2Thumbprints: result.Annotations[annotationThumbprint][1 : len(result.Annotations[annotationThumbprint])-1],
@@ -350,7 +365,8 @@ func newInspect(ctx context.Context) *cobra.Command {
 		},
 	}
 
-	var inspectOpts InspectOptions
+	var inspectOpts RepoInspectOptions
+	cmd.Flags().StringVarP(&inspectOpts.Dir, "dir", "d", "", "walks the provided directories attempting to find signed artifacts")
 	cmd.Flags().StringVarP(&inspectOpts.Username, "username", "u", "", "Username (required if password is set)")
 	cmd.Flags().StringVarP(&inspectOpts.Password, "password", "p", "", "Password (required if username is set)")
 	cmd.Flags().StringVarP(&inspectOpts.AccessToken, "token", "t", "", "Access Token")

@@ -18,7 +18,8 @@ func NewRoot(ctx context.Context) *cobra.Command {
 		Long:  `TBD`,
 	}
 
-	root.AddCommand(newInspect(ctx))
+	root.AddCommand(newRepoInspect(ctx))
+	root.AddCommand(newFSInspect(ctx))
 
 	return root
 }
