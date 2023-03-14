@@ -1,7 +1,7 @@
 # Binaries for programs and plugins
 .DS_STORE
-*.exe
-*.exe~
+sigscan.exe
+sigscan.exe~
 *.dll
 *.so
 *.dylib
