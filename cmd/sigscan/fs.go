@@ -78,7 +78,7 @@ func newFSInspect(ctx context.Context) *cobra.Command {
 				}
 
 				fsys := os.DirFS(dir)
-				err = fs.WalkDir(fsys, ".", func(p string, d fs.DirEntry, err error) error {
+				err = fs.WalkDir(fsys, ".", func(p string, d fs.DirEntry, e error) error {
 					if d.IsDir() || !d.Type().IsRegular() {
 						return nil
 					}

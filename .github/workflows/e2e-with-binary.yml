@@ -1,0 +1,37 @@
+name: e2e-with-binary
+# Run on every push, and allow it to be run manually.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'release-*']
+  pull_request:
+
+jobs:
+  e2e-tests-with-binary:
+    # Skip if running in a fork that might not have secrets configured.
+    if: ${{ github.repository == 'venafi/sigscan' }}
+    name: Run tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-go@v3.3.0
+        with:
+          go-version: '1.19'
+          check-latest: true
+      - name: build sigscan and check
+        shell: bash
+        run: |
+          set -e
+          make sigscan
+          ./sigscan fs test/tempdir1/ test/tempdir2 --output json | jq
+          ./sigscan fs test/tempdir1/ test/tempdir2 --output json | jq
+          ./sigscan fs test/tempdir1/ test/tempdir2 --output pretty 
+          ./sigscan fs test/tempdir1/ test/tempdir2 --output pretty
+  

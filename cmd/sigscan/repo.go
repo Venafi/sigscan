@@ -3,9 +3,7 @@ package sigscan
 import (
 	"context"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"os"
 	"runtime"
 	"runtime/debug"
 	"strings"
@@ -142,17 +140,6 @@ func parseRepoPath(opts *repositoryOptions, arg string) error {
 		opts.hostname = path
 	}
 	return nil
-}
-
-func showCert(blob []byte, seen map[string]bool) {
-	if seen[string(blob)] {
-		return
-	}
-	seen[string(blob)] = true
-	_ = pem.Encode(os.Stdout, &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: blob,
-	})
 }
 
 func newRepoInspect(ctx context.Context) *cobra.Command {
