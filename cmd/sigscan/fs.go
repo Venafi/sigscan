@@ -127,7 +127,6 @@ func newFSInspect(ctx context.Context) *cobra.Command {
 					}
 					for _, sig := range sigs {
 						sigCount += 1
-						println(p)
 						hasher := sha256.New()
 						if _, err := io.Copy(hasher, fos); err != nil {
 							return err
