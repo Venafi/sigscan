@@ -1,6 +1,6 @@
-# v0.1.0
+# v0.2.0
 
 ## Enhancements
 
-* Docker credential store support
 * Additional registry support.
+* Now supports the ability to scan filesystem for signed executables (EXE) and Java applications (JAR)
