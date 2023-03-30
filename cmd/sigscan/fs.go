@@ -40,9 +40,10 @@ func newFSInspect(ctx context.Context) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "fs [flags] directories",
-		Short: "TBD",
-		Long:  `TBD`,
+		Use:     "fs [flags] directories",
+		Short:   "Inspect select file types for signatures",
+		Long:    "Inspect select file types for signatures",
+		Example: `  sigscan fs test/tempdir1/ test/tempdir2 --output json | jq `,
 		PreRunE: func(_ *cobra.Command, args []string) error {
 			return nil
 		},

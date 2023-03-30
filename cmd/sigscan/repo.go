@@ -151,9 +151,10 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "repo [flags] image",
-		Short: "TBD",
-		Long:  `TBD`,
+		Use:     "repo [flags] image",
+		Short:   "Inspect container images for signatures (cosign and notaryv2)",
+		Long:    "Inspect container images for signatures (cosign and notaryv2)",
+		Example: `  sigscan repo myregistry --output pretty --username myuser --password supersecretpassword `,
 		PreRunE: func(_ *cobra.Command, args []string) error {
 			return options.MustSingleImageArgs(args)
 		},

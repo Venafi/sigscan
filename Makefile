@@ -27,8 +27,10 @@ endif
 PLATFORMS=darwin linux windows
 ARCHITECTURES=amd64
 
-PKG=github.com/venafi/sigscan/pkg/version
-LDFLAGS=-X $(PKG).GitVersion=$(GIT_VERSION) -X $(PKG).gitCommit=$(GIT_HASH) -X $(PKG).gitTreeState=$(GIT_TREESTATE) -X $(PKG).buildDate=$(BUILD_DATE)
+LDFLAGS=-buildid= -X sigs.k8s.io/release-utils/version.gitVersion=$(GIT_VERSION) \
+        -X sigs.k8s.io/release-utils/version.gitCommit=$(GIT_HASH) \
+        -X sigs.k8s.io/release-utils/version.gitTreeState=$(GIT_TREESTATE) \
+        -X sigs.k8s.io/release-utils/version.buildDate=$(BUILD_DATE)
 
 SRCS = $(shell find cmd -iname "*.go") $(shell find pkg -iname "*.go") $(shell find internal -iname "*.go")
 

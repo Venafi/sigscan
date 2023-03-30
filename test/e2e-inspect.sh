@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # GHCR.IO
-../sigscan inspect ghcr.io --output pretty --username zosocanuck --password ACCESS_TOKEN
+../sigscan repo ghcr.io --output pretty --username zosocanuck --password ACCESS_TOKEN
 
 # DOCKER.IO
-../sigscan inspect docker.io --output pretty --org venafi --username zosocanuck --password ACCESS_TOKEN
+../sigscan repo docker.io --output pretty --org venafi --username zosocanuck --password ACCESS_TOKEN
 
 # Google Container Registry GCR and Google Artifact Registry
 # us-west1-docker.pkg.dev
@@ -14,21 +14,21 @@
 # gcr.io
 # cosign sign --tlog-upload=fase --key "pkcs11:slot-id=0;object=vsign-rsa2048-cert?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" gcr.io/jetstack-ivan-wallis/net-monitor:v1
 # echo "https://gcr.io" | docker-credential-gcr get
-../sigscan inspect us-west1-docker.pkg.dev --output pretty --token
+../sigscan repo us-west1-docker.pkg.dev --output pretty --token
 
 # ECR Public
 # aws ecr-public get-login-password --region us-east-1 --profile iwallis | docker login --username AWS --password-stdin public.ecr.aws
 # docker tag localhost:5005/ubuntu:latest public.ecr.aws/v3y9q2u6/net-monitor:v1
 # docker push public.ecr.aws/v3y9q2u6/net-monitor:v1
 # cosign sign --key "pkcs11:slot-id=0;object=vsign-rsa2048-cert?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" public.ecr.aws/v3y9q2u6/net-monitor:v1
-../sigscan inspect public.ecr.aws --output pretty
+../sigscan repo public.ecr.aws --output pretty
 
 # ECR Private
 # aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 427380916706.dkr.ecr.us-west-1.amazonaws.com
 # docker tag hello-world:latest 427380916706.dkr.ecr.us-west-1.amazonaws.com/iwallis-test
 # docker push 427380916706.dkr.ecr.us-west-1.amazonaws.com/iwallis-test
 # cosign sign --key "pkcs11:slot-id=0;object=vsign-rsa2048-cert?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" 427380916706.dkr.ecr.us-west-1.amazonaws.com/iwallis-test
-../sigscan inspect 427380916706.dkr.ecr.us-west-1.amazonaws.com --output pretty
+../sigscan repo 427380916706.dkr.ecr.us-west-1.amazonaws.com --output pretty
 
 
 # ACR
@@ -37,21 +37,21 @@ REGISTRY=$ACR_NAME.azurecr.io
 USERNAME="00000000-0000-0000-0000-000000000000"
 PASSWORD=$(az acr login --name $ACR_NAME --expose-token --output tsv --query accessToken)
 
-../sigscan inspect $REGISTRY --output pretty --username $USERNAME --password $PASSWORD
+../sigscan repo $REGISTRY --output pretty --username $USERNAME --password $PASSWORD
 
 # ORAS Project registry v1.0.0-rc.3
 # Notary v2 test
 REGISTRY=localhost:5005
-../sigscan inspect $REGISTRY --output pretty --insecure
+../sigscan repo $REGISTRY --output pretty --insecure
 
 # docker registryv2
 # Sigstore/cosign test
 # cosign with CSP keypair environment
 # cosign sign --key "pkcs11:slot-id=0;object=vsign-rsa2048?module-path=/Library/Venafi/CodeSigning/lib/venafipkcs11.so&pin-value=1234" localhost:5010/alpine:signed
 REGISTRY=localhost:5010
-../sigscan inspect $REGISTRY --output pretty --insecure
+../sigscan repo $REGISTRY --output pretty --insecure
 #JSON output test
-../sigscan inspect $REGISTRY --output json --insecure | jq '.registry.signatures[].subjectname'
+../sigscan repo $REGISTRY --output json --insecure | jq '.registry.signatures[].subjectname'
 
 # Zot
 # Notary v2 test
@@ -63,5 +63,5 @@ REGISTRY=localhost:5010
 # notation login localhost:5015 -u admin -p Passw0rd
 # notation sign --key "vsign-ztpki-rsa2048" localhost:5015/net-monitor:v1
 REGISTRY=localhost:5015
-../sigscan inspect $REGISTRY --output pretty --insecure --username admin --password Passw0rd
+../sigscan repo $REGISTRY --output pretty --insecure --username admin --password Passw0rd
 

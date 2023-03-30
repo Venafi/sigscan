@@ -9,17 +9,19 @@ import (
 
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	"sigs.k8s.io/release-utils/version"
 )
 
 func NewRoot(ctx context.Context) *cobra.Command {
 	root := &cobra.Command{
 		Use:   "sigscan subcommand",
-		Short: "Inspect container images for signatures (cosign or notaryv2) ",
-		Long:  `TBD`,
+		Short: "Inspect container images and select file types for signatures",
+		Long:  `Inspect container images and select file types for signatures and report the signing identities`,
 	}
 
 	root.AddCommand(newRepoInspect(ctx))
 	root.AddCommand(newFSInspect(ctx))
+	root.AddCommand(version.WithFont("starwars"))
 
 	return root
 }

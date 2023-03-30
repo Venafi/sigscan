@@ -37,7 +37,7 @@ Sigscan is made available under the Apache 2.0 license, see [LICENSE.txt](LICENS
 On macOS and Linux, if you have [Homebrew](https://brew.sh) you can install Sigscan with:
 
 ```shell
-brew install venafi/sigscan
+brew install venafi/tap/sigscan
 ```
 
 This will also install man pages and shell completion.
