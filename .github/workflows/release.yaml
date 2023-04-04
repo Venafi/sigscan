@@ -7,11 +7,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ linux, darwin ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         arch: [ amd64, arm64 ]
+        include: 
+          - os: macos-latest
+            SIGSCAN_TARGET: sigscan-${{ matrix.os }}-${{ matrix.arch }}
+          - os: ubuntu-latest
+            SIGSCAN_TARGET: sigscan-${{ matrix.os }}-${{ matrix.arch }}
+          - os: windows-latest
+            SIGSCAN_TARGET: sigscan-windows-amd64.exe
+        exclude:
+          - os: windows-latest
+            arch: arm64
     steps:
       - name: Install Go
         uses: actions/setup-go@v3
@@ -19,12 +29,11 @@ jobs:
           go-version: 1.19.x
       - uses: actions/checkout@v3
       - name: Go Build
-        run: CGO_ENABLED=0 GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -a -installsuffix cgo -o sigscan .
+        run: make sigscan && mv ./sigscan ./${{ matrix.SIGSCAN_TARGET }}
       - uses: actions/upload-artifact@v3
         with:
-          name: sigscan-${{ matrix.os }}-${{ matrix.arch }}
-          path: sigscan
-
+          name: artifacts
+          path: sigscan-*
   docs:
     runs-on: ubuntu-latest
     steps:
@@ -47,11 +56,6 @@ jobs:
       - uses: actions/download-artifact@v3
       - name: Rename Artifacts
         run: |
-          mkdir bin
-          mv sigscan-darwin-amd64/sigscan bin/sigscan-darwin-amd64 
-          mv sigscan-darwin-arm64/sigscan bin/sigscan-darwin-arm64 
-          mv sigscan-linux-amd64/sigscan bin/sigscan-linux-amd64 
-          mv sigscan-linux-arm64/sigscan bin/sigscan-linux-arm64
           mkdir man
           mv man-pages/* man/
       - name: Release
@@ -60,6 +64,5 @@ jobs:
           draft: false
           body_path: CHANGELOG.md
           files: |
-            LICENSE.txt
-            bin/sigscan-*
+            sigscan-*
             man/*
