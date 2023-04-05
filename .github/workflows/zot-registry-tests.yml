@@ -27,9 +27,9 @@ jobs:
           check-latest: true
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
-      - name: docker registry v2
+      - name: Run zot and publish test image
         run: |
-          docker run -d -p 5000:5000 ghcr.io/project-zot/zot-linux-amd64:latest
+          docker run -d -p 5000:5000 --name zotregistry ghcr.io/project-zot/zot-linux-amd64:latest
           skopeo --insecure-policy copy --dest-tls-verify=false --src-tls-verify=false --multi-arch=all --format=oci docker://docker.io/alpine:latest docker://${{ env.REGISTRY }}/alpine:signed
       - name: Sign with cosign
         run: |
