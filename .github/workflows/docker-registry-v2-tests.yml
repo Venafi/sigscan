@@ -35,7 +35,7 @@ jobs:
           docker image push ${{ env.REGISTRY }}/alpine:signed
       - name: Sign with cosign
         run: |
-          COSIGN_PASSWORD=1234 cosign sign --tlog-upload=false --allow-http-registry --allow-insecure-registry --key test/identities/signer1.key ${{ env.REGISTRY }}/alpine:signed
+          COSIGN_PASSWORD=1234 cosign sign --tlog-upload=false --allow-http-registry --allow-insecure-registry --key test/identities/signer1.key --certificate test/identities/signer1.crt ${{ env.REGISTRY }}/alpine:signed
       - name: build sigscan and check
         shell: bash
         run: |
