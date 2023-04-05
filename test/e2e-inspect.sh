@@ -58,8 +58,7 @@ REGISTRY=localhost:5010
 # skopeo login localhost:5005 -u admin -p not4you --tls-verify=false
 # skopeo login localhost:5015 -u admin -p Passw0rd --tls-verify=false
 # skopeo --insecure-policy copy --dest-tls-verify=false --src-tls-verify=false --multi-arch=all --format=oci docker://localhost:5005/net-monitor:v1 docker://localhost:5015/net-monitor:v1
-
-# SIGN
+# Sign
 # notation login localhost:5015 -u admin -p Passw0rd
 # notation sign --key "vsign-ztpki-rsa2048" localhost:5015/net-monitor:v1
 REGISTRY=localhost:5015
