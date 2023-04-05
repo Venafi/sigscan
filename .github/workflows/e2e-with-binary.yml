@@ -3,7 +3,7 @@ name: e2e-with-binary
 on:
   workflow_dispatch:
   push:
-    branches: ['main', 'release-*']
+    branches: ['main', 'v*']
   pull_request:
 
 jobs:
