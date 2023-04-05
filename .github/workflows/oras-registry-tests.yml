@@ -29,7 +29,7 @@ jobs:
         uses: sigstore/cosign-installer@main
       - name: Run oras project registry and publish test image
         run: |
-          docker run -d -p 5002:5000 --name orasregistry ghcr.io/oras-project/registry:latest
+          docker run -d -p 5002:5000 --name orasregistry ghcr.io/oras-project/registry:v1.0.0-rc.4
           docker pull alpine:latest
           docker image tag alpine:latest ${{ env.REGISTRY }}/alpine:signed
           docker image push ${{ env.REGISTRY }}/alpine:signed
