@@ -1,0 +1,46 @@
+name: ORAS project registry tests
+# Run on every push, and allow it to be run manually.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'v*']
+  pull_request:
+
+env:
+  REGISTRY: localhost:5002
+
+jobs:
+  docker-registry-v2-tests:
+    # Skip if running in a fork that might not have secrets configured.
+    if: ${{ github.repository == 'venafi/sigscan' }}
+    name: Run tests
+    runs-on: ubuntu-latest
+   
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-go@v3.3.0
+        with:
+          go-version: '1.19'
+          check-latest: true
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+      - name: Run oras project registry and publish test image
+        run: |
+          docker run -d -p 5002:5000 --name orasregistry ghcr.io/oras-project/registry:latest
+          docker pull alpine:latest
+          docker image tag alpine:latest ${{ env.REGISTRY }}/alpine:signed
+          docker image push ${{ env.REGISTRY }}/alpine:signed
+          # skopeo --insecure-policy copy --dest-tls-verify=false --src-tls-verify=false --format=oci docker://docker.io/alpine:latest docker://${{ env.REGISTRY }}/alpine:signed
+      - name: Sign with cosign
+        run: |
+          COSIGN_PASSWORD=1234 cosign sign --tlog-upload=false --allow-http-registry --allow-insecure-registry --key test/identities/signer1.key --certificate test/identities/signer1.crt ${{ env.REGISTRY }}/alpine:signed
+      - name: build sigscan and check
+        shell: bash
+        run: |
+          set -e
+          make sigscan
+          ./sigscan repo ${{ env.REGISTRY }} --output json --insecure | jq
+  
