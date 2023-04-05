@@ -32,6 +32,7 @@ jobs:
           docker run -d -p 5000:5000 --name registry registry:2
           docker pull alpine:latest
           docker image tag alpine:latest ${{ env.REGISTRY }}/alpine:signed
+          docker image push ${{ env.REGISTRY }}/alpine:signed
       - name: Sign with cosign
         run: |
           COSIGN_PASSWORD=1234 cosign sign --key test/identities/signer1.key ${{ env.REGISTRY }}/alpine:signed
