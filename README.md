@@ -23,6 +23,7 @@ Sigscan is made available under the Apache 2.0 license, see [LICENSE.txt](LICENS
 | ECR (public) | :heavy_check_mark: | us-east-1 only per AWS CLI [issue](https://github.com/aws/aws-cli/issues/5917) |
 | GCR (public) | :heavy_check_mark: | |
 | GCR (private) | :x: | |
+| GAR | :heavy_check_mark: | Non-compliant Referrers API |
 
 #### FileType Support
 | Type | Compatibility | Notes |

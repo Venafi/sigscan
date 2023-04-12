@@ -16,6 +16,7 @@ import (
 	"github.com/rodaine/table"
 	o "github.com/sigstore/cosign/cmd/cosign/cli/options"
 	"github.com/sigstore/cosign/pkg/cosign"
+	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 
@@ -40,6 +41,13 @@ const (
 	biVCSModified = "vcs.modified"
 )
 
+const (
+	artifactType              = "application/vnd.cncf.notary.signature"
+	annotationThumbprint      = "io.cncf.notary.x509chain.thumbprint#S256"
+	artifactManifestMediaType = "application/vnd.oci.artifact.manifest.v1+json"
+	imageManifestMediaType    = "application/vnd.oci.image.manifest.v1+json"
+)
+
 type Info struct {
 	GoVer      string           `json:"goVersion"`       // go version
 	GoCompiler string           `json:"goCompiler"`      // go compiler
@@ -58,7 +66,6 @@ type RepoInspectOptions struct {
 	AccessToken  string
 	Insecure     bool // HTTP vs HTTPS
 	Organization string
-	Dir          string
 }
 
 type repositoryOptions struct {
@@ -124,6 +131,13 @@ func DefaultRegistryClientOpts(ctx context.Context) []remote.Option {
 	}
 }
 
+const (
+	MediaTypeConfig       = "application/vnd.docker.container.image.v1+json"
+	MediaTypeManifestList = "application/vnd.docker.distribution.manifest.list.v2+json"
+	MediaTypeManifest     = "application/vnd.docker.distribution.manifest.v2+json"
+	MediaTypeForeignLayer = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
+)
+
 func parseRepoPath(opts *repositoryOptions, arg string) error {
 	path := strings.TrimSuffix(arg, "/")
 	if strings.Contains(path, "/") {
@@ -161,9 +175,6 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			host := args[0]
-
-			artifactType := "application/vnd.cncf.notary.signature"
-			annotationThumbprint := "io.cncf.notary.x509chain.thumbprint#S256"
 
 			user, _ := cmd.Flags().GetString("username")
 			pass, _ := cmd.Flags().GetString("password")
@@ -222,9 +233,32 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 
 			}
 
-			err = registry.FindRepositories(ctx, org, user, pass, token, reg, "", func(repos []string) error {
+			err = registry.FindRepositories(ctx, org, opts.namespace, user, pass, token, reg, "", func(repos []string) error {
 				for _, repo := range repos {
-					r, err := oras.NewRepository(fmt.Sprintf("%s/%s", host, repo))
+					if outOpts.Mode == options.OutputModePretty {
+						log.WithFields(logrus.Fields{
+							"repo":      repo,
+							"hostname":  opts.hostname,
+							"namespace": opts.namespace,
+						}).Trace("FindRepositories")
+					}
+					var err error
+					var r *oras.Repository
+					var imagePath string
+
+					if opts.namespace != "" {
+						imagePath = opts.hostname + "/" + opts.namespace + repo
+						log.WithFields(logrus.Fields{
+							"image_path": imagePath,
+						}).Trace("NewRepositoryNoNamespace")
+						r, err = oras.NewRepository(opts.hostname + "/" + opts.namespace + repo)
+					} else {
+						imagePath = opts.hostname + "/" + repo
+						log.WithFields(logrus.Fields{
+							"image_path": imagePath,
+						}).Trace("NewRepository")
+						r, err = oras.NewRepository(fmt.Sprintf("%s/%s", opts.hostname, repo))
+					}
 					if err != nil {
 						return fmt.Errorf("error with repository %s/%s: %s", host, repo, err.Error())
 					}
@@ -239,10 +273,16 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 					err = r.Tags(ctx, "", func(tags []string) error {
 						for _, tag := range tags {
 							entryCount += 1
+
 							descriptor, err := r.Resolve(ctx, tag)
 							if err != nil {
 								return fmt.Errorf("error resolving tag [%s]: %s", tag, err.Error())
 							}
+
+							log.WithFields(logrus.Fields{
+								"image_tag":  tag,
+								"descriptor": descriptor.MediaType,
+							}).Trace("Tags")
 
 							//Sigstore/cosign signature discovery
 							regOpts := o.RegistryOptions{}
@@ -251,14 +291,29 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 								return err
 							}
 
-							ref, _ := name.ParseReference(host + "/" + repo + ":" + tag)
+							ref, _ := name.ParseReference(imagePath + ":" + tag)
 
-							sigs, _ := cosign.FetchSignaturesForReference(ctx, ref, ociremoteOpts...)
-							// Disregard any errors since we want to find all the signed container images
+							log.WithFields(logrus.Fields{
+								"ref":       ref.String(),
+								"mediatype": descriptor.MediaType,
+								"digest":    descriptor.Digest,
+							}).Trace("ParseReference")
+
+							sigs, err := cosign.FetchSignaturesForReference(ctx, ref, ociremoteOpts...)
+							if err != nil {
+								// Disregard any errors since we want to find all the signed container images
+								log.WithFields(logrus.Fields{
+									"ref": ref.String(),
+								}).Trace("cosign: " + err.Error())
+							}
 
 							for _, sig := range sigs {
 
 								sigCount += 1
+
+								log.WithFields(logrus.Fields{
+									"base64sig": sig.Base64Signature,
+								}).Trace("Cosign")
 
 								if outOpts.Mode == options.OutputModeJSON {
 									if sig.Cert != nil {
@@ -281,9 +336,20 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 
 							// ORAS NotaryV2 signature discovery
 							// find its referrers by calling Referrers
+							// Workaround for Google Artifact Registry given non-compliance of support for referrer api.
+							// Should return 404 but returns 302 and redirects to html page
+							// https://github.com/opencontainers/distribution-spec/blob/v1.1.0-rc1/spec.md#listing-referrers
+							if strings.Contains(opts.hostname, registry.GAR) {
+								r.SetReferrersCapability(false)
+							}
 							if err := r.Referrers(ctx, descriptor, artifactType, func(referrers []ocispec.Descriptor) error {
 								// for each page of the results, do the following:
 								for _, referrer := range referrers {
+
+									log.WithFields(logrus.Fields{
+										"referrers": referrer.MediaType,
+									}).Trace("NotaryV2")
+
 									sigCount += 1
 									// for each item in this page, pull the manifest and verify its content
 									rc, err := r.Fetch(ctx, referrer)
@@ -295,17 +361,47 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 									if err != nil {
 										return fmt.Errorf("error reading referrer: %s", err.Error())
 									}
-									var result *ocispec.Artifact = &ocispec.Artifact{}
-									err = json.Unmarshal(pulledBlob, result)
+
+									/* Until OCI 1.1 is released Notaryv2 signatures may be accessible via Image Manifest or Artifact Manifest
+									https://github.com/opencontainers/image-spec/blob/main/specs-go/v1/manifest.go
+									https://github.com/opencontainers/image-spec/blob/main/specs-go/v1/artifact.go
+									*/
+
+									var artifact *ocispec.Artifact = &ocispec.Artifact{}
+									var manifest *ocispec.Manifest = &ocispec.Manifest{}
+
+									err = json.Unmarshal(pulledBlob, artifact)
 									if err != nil {
 										return fmt.Errorf(err.Error())
+									}
+
+									err = json.Unmarshal(pulledBlob, manifest)
+									if err != nil {
+										return fmt.Errorf(err.Error())
+									}
+
+									if outOpts.Mode == options.OutputModePretty {
+										if artifact.MediaType == imageManifestMediaType {
+											log.WithFields(logrus.Fields{
+												"repo":                      repo + ":" + tag,
+												"mediaType":                 manifest.MediaType,
+												"artifactType":              manifest.Config.MediaType,
+												"notaryV2EnvelopeMediaType": manifest.Layers[0].MediaType,
+											}).Trace("ImageManifest")
+										}
+										if artifact.MediaType == artifactManifestMediaType {
+											log.WithFields(logrus.Fields{
+												"repo":                      repo + ":" + tag,
+												"notaryV2EnvelopeMediaType": artifact.Blobs[0].MediaType,
+											}).Trace("ArtifactManifest")
+										}
 									}
 
 									if outOpts.Mode == options.OutputModeJSON {
 										out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
 											Path:                repo + ":" + tag,
 											Digest:              string(descriptor.Digest),
-											NotaryV2Thumbprints: result.Annotations[annotationThumbprint][1 : len(result.Annotations[annotationThumbprint])-1],
+											NotaryV2Thumbprints: manifest.Annotations[annotationThumbprint][1 : len(manifest.Annotations[annotationThumbprint])-1],
 										})
 									} else {
 										tbl.AddRow(repo+":"+tag, string(descriptor.Digest), "✅", "❌")
@@ -314,9 +410,10 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 								return nil
 							}); err != nil {
 								if outOpts.Mode == options.OutputModePretty {
-									fmt.Println("skipping error")
+									log.WithFields(logrus.Fields{
+										"path": repo + ":" + tag,
+									}).Debug(err.Error())
 								}
-								//return fmt.Errorf("error finding NotaryV2 referrers: %s", err.Error())
 							}
 
 						}
@@ -354,7 +451,6 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 	}
 
 	var inspectOpts RepoInspectOptions
-	cmd.Flags().StringVarP(&inspectOpts.Dir, "dir", "d", "", "walks the provided directories attempting to find signed artifacts")
 	cmd.Flags().StringVarP(&inspectOpts.Username, "username", "u", "", "Username (required if password is set)")
 	cmd.Flags().StringVarP(&inspectOpts.Password, "password", "p", "", "Password (required if username is set)")
 	cmd.Flags().StringVarP(&inspectOpts.AccessToken, "token", "t", "", "Access Token")

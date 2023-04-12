@@ -14,6 +14,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/venafi/sigscan/cmd/sigscan/options"
@@ -126,6 +127,14 @@ func newFSInspect(ctx context.Context) *cobra.Command {
 						}
 						return err
 					}
+
+					log.WithFields(logrus.Fields{
+						"path":                  p,
+						"magic.FileType":        fileType,
+						"magic.CompressionType": compression,
+						"#sigs":                 len(sigs),
+					}).Trace("ScanDirectories")
+
 					for _, sig := range sigs {
 						sigCount += 1
 						hasher := sha256.New()

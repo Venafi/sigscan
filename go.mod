@@ -1,6 +1,6 @@
 module github.com/venafi/sigscan
 
-go 1.19
+go 1.20
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.8
@@ -261,6 +261,6 @@ require (
 	github.com/sassoftware/relic/v7 v7.5.4
 	github.com/sigstore/cosign v1.13.1
 	github.com/spf13/pflag v1.0.5 // indirect
-	oras.land/oras-go/v2 v2.0.0
+	oras.land/oras-go/v2 v2.0.2
 	sigs.k8s.io/controller-runtime v0.14.5
 )

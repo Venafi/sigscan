@@ -162,7 +162,7 @@ func (opts *Remote) GetAuthClient(registry string, debug bool) (client *auth.Cli
 	return
 }
 
-func FindRepositories(ctx context.Context, org string, username string, password string, token string, regclient *oremote.Registry, last string, fn func(repos []string) error) error {
+func FindRepositories(ctx context.Context, org string, namespace string, username string, password string, token string, regclient *oremote.Registry, last string, fn func(repos []string) error) error {
 	if regclient.Reference.Host() == GHCR {
 		ts := oauth2.StaticTokenSource(
 			&oauth2.Token{AccessToken: token},
@@ -258,6 +258,25 @@ func FindRepositories(ctx context.Context, org string, username string, password
 		return fn(repos)
 
 	} else {
-		return regclient.Repositories(ctx, last, fn)
+
+		if namespace != "" {
+			var repos []string
+			err := regclient.Repositories(ctx, last, func(repoList []string) error {
+				for _, r := range repoList {
+					if subRepo, found := strings.CutPrefix(r, namespace); found {
+						repos = append(repos, subRepo)
+					}
+				}
+				return nil
+
+			})
+			if err != nil {
+				return fmt.Errorf((err.Error()))
+			}
+
+			return fn(repos)
+		} else {
+			return regclient.Repositories(ctx, last, fn)
+		}
 	}
 }
