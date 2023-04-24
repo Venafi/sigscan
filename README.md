@@ -8,7 +8,7 @@ For OCI Artifacts and NotaryV2 signatures we are following the [Signature Specif
 
 Sigscan can also be used to scan the filesystem to discover and report on signed JAR as well as EXE files.  Sigscan will extract the signer certificate subjectname as well as the countersigner/timestamp (if available) subjectname.
 
-Sigscan is made available under the Apache 2.0 license, see [LICENSE.txt](LICENSE.txt).
+Sigscan is made available under the Apache 2.0 license, see [LICENSE](LICENSE).
 
 #### Registry Support
 | Name | Compatibility | Notes |
