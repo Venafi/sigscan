@@ -31,6 +31,13 @@ Sigscan is made available under the Apache 2.0 license, see [LICENSE.txt](LICENS
 | JAR  | :heavy_check_mark: | |
 | EXE | :heavy_check_mark: | |
 
+#### SBOM Support (Experimental)
+| Type | Compatibility | Notes |
+| ---- | ------------- | ----- |
+| OWASP [CycloneDX](https://cyclonedx.org/) | :heavy_check_mark: | `application/vnd.cyclonedx` |
+| Linux Foundation [SPDX](https://spdx.dev/) | :heavy_check_mark: | `application/spdx+json` |
+| OASIS [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.0/sarif-v2.0.html) | :heavy_check_mark: | `application/sarif+json` |
+
 ## Installation
 
 ### Homebrew
@@ -63,6 +70,10 @@ Sigscan can be used to list out details of all the signed container images in th
 
 *Make sure you are authenticated to the registry as needed.*
 
+*Note: If you are on Windows ANSI Terminal Control support (introduced in Windows 10 console build 16257 and later) is not enabled by default.  This will affect the table view when using the displaying the output table via `--output pretty`.  Run sigscan in a PowerShell console as opposed to a CMD console.  A [workaround](https://github.com/rodaine/table/issues/18) exists by running the following in Admin Mode*:
+
+`Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1`
+
 ```shell
 $ sigscan repo myregistry --output pretty --username myuser --password supersecretpassword
 ```
@@ -91,6 +102,20 @@ $ sigscan fs test/tempdir1/ test/tempdir2 --output json | jq
 ```
 
 *EXE and Jar file types are currently supported*
+
+## What ** is not ** production ready
+
+While parts of `sigscan` are stable, we are continuing to experiment and add new features. The following feature set is not considered stable yet, but we are commiteted to stabilizing it over time!
+
+#### Formats/Specifications
+
+While the [cosign](https://github.com/sigstore/cosign) code for uploading, signing, retrieving, and verifying several artifact types is stable, the format specifications for some of those types may not be considered stable yet.
+
+These include:
+
+* The SBOM specification for storing SBOMs in a container registry
+
+sigscan provides experimental support for cyclonedx SBOM signatures via the cosign artifact signature mediatype `application/vnd.dev.cosign.artifact.sig.v1+json`
 
 ## Authentication
 

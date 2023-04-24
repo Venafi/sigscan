@@ -14,8 +14,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/rodaine/table"
-	o "github.com/sigstore/cosign/cmd/cosign/cli/options"
-	"github.com/sigstore/cosign/pkg/cosign"
+	o "github.com/sigstore/cosign/v2/cmd/cosign/cli/options"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -24,12 +23,14 @@ import (
 
 	"github.com/venafi/sigscan/cmd/sigscan/options"
 	"github.com/venafi/sigscan/internal/output"
+	"github.com/venafi/sigscan/internal/signers"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	_ "github.com/sassoftware/relic/v7/signers/pecoff"
 	"oras.land/oras-go/v2/content"
 	orasreg "oras.land/oras-go/v2/registry"
 	oras "oras.land/oras-go/v2/registry/remote"
+	"oras.land/oras-go/v2/registry/remote/auth"
 )
 
 const (
@@ -39,13 +40,6 @@ const (
 	biVCSDate     = "vcs.time"
 	biVCSCommit   = "vcs.revision"
 	biVCSModified = "vcs.modified"
-)
-
-const (
-	artifactType              = "application/vnd.cncf.notary.signature"
-	annotationThumbprint      = "io.cncf.notary.x509chain.thumbprint#S256"
-	artifactManifestMediaType = "application/vnd.oci.artifact.manifest.v1+json"
-	imageManifestMediaType    = "application/vnd.oci.image.manifest.v1+json"
 )
 
 type Info struct {
@@ -200,12 +194,20 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 			//reg.Client = client
 
 			var rem registry.Remote
-			reg.Client, err = rem.GetAuthClient(host, false)
+			var cred auth.Credential
+
+			reg.Client, cred, err = rem.GetAuthClient(host, false)
 			if err != nil {
 				return fmt.Errorf(err.Error())
 			}
 
-			if host == registry.GHCR || host == registry.DOCKER {
+			// GHCR can use docker credential helper otherwise credential can be supplied via arguments
+			if host == registry.GHCR && user == "" && pass == "" {
+				user = cred.Username
+				token = cred.Password
+			}
+
+			if host == registry.DOCKER {
 				token = pass
 			}
 
@@ -299,39 +301,12 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 								"digest":    descriptor.Digest,
 							}).Trace("ParseReference")
 
-							sigs, err := cosign.FetchSignaturesForReference(ctx, ref, ociremoteOpts...)
+							err = signers.FetchCosignImageSignatures(ctx, ref, ociremoteOpts, &sigCount, tbl, outOpts, repo, tag, descriptor, &out, log)
 							if err != nil {
 								// Disregard any errors since we want to find all the signed container images
 								log.WithFields(logrus.Fields{
 									"ref": ref.String(),
-								}).Trace("cosign: " + err.Error())
-							}
-
-							for _, sig := range sigs {
-
-								sigCount += 1
-
-								log.WithFields(logrus.Fields{
-									"base64sig": sig.Base64Signature,
-								}).Trace("Cosign")
-
-								if outOpts.Mode == options.OutputModeJSON {
-									if sig.Cert != nil {
-										out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
-											Path:               repo + ":" + tag,
-											Digest:             string(descriptor.Digest),
-											CertificateSubject: sig.Cert.Subject.String(),
-										})
-									} else {
-										out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
-											Path:               repo + ":" + tag,
-											Digest:             string(descriptor.Digest),
-											CertificateSubject: "Unknown KeyPair",
-										})
-									}
-								} else {
-									tbl.AddRow(repo+":"+tag, string(descriptor.Digest), "❌", "✅")
-								}
+								}).Trace("FetchCosignImageSignatures: " + err.Error())
 							}
 
 							// ORAS NotaryV2 signature discovery
@@ -342,15 +317,28 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 							if strings.Contains(opts.hostname, registry.GAR) {
 								r.SetReferrersCapability(false)
 							}
-							if err := r.Referrers(ctx, descriptor, artifactType, func(referrers []ocispec.Descriptor) error {
+							if err := r.Referrers(ctx, descriptor, "", func(referrers []ocispec.Descriptor) error {
 								// for each page of the results, do the following:
 								for _, referrer := range referrers {
 
-									log.WithFields(logrus.Fields{
-										"referrers": referrer.MediaType,
-									}).Trace("NotaryV2")
+									entryCount += 1
 
-									sigCount += 1
+									// Look for SBOMs signed by cosign
+									err = signers.FetchCosignArtifactSignatures(ctx, ref, ociremoteOpts, &sigCount, tbl, outOpts, imagePath, repo, tag, referrer, &out, log)
+									if err != nil {
+										// Disregard any errors since we want to find all the signed container images
+										log.WithFields(logrus.Fields{
+											"ref": ref.String(),
+										}).Trace("FetchCosignArtifactSignatures: " + err.Error())
+									}
+
+									log.WithFields(logrus.Fields{
+										"referrerArtifactType": referrer.ArtifactType,
+										"referrerDigest":       referrer.Digest,
+										"referencePath":        ref.String(),
+										"sigsPath":             "TBD",
+									}).Trace("Referrers")
+
 									// for each item in this page, pull the manifest and verify its content
 									rc, err := r.Fetch(ctx, referrer)
 									if err != nil {
@@ -380,31 +368,39 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 										return fmt.Errorf(err.Error())
 									}
 
-									if outOpts.Mode == options.OutputModePretty {
-										if artifact.MediaType == imageManifestMediaType {
-											log.WithFields(logrus.Fields{
-												"repo":                      repo + ":" + tag,
-												"mediaType":                 manifest.MediaType,
-												"artifactType":              manifest.Config.MediaType,
-												"notaryV2EnvelopeMediaType": manifest.Layers[0].MediaType,
-											}).Trace("ImageManifest")
-										}
-										if artifact.MediaType == artifactManifestMediaType {
-											log.WithFields(logrus.Fields{
-												"repo":                      repo + ":" + tag,
-												"notaryV2EnvelopeMediaType": artifact.Blobs[0].MediaType,
-											}).Trace("ArtifactManifest")
-										}
-									}
+									if manifest.Config.MediaType == registry.NotaryV2ArtifactType || artifact.ArtifactType == registry.NotaryV2ArtifactType {
 
-									if outOpts.Mode == options.OutputModeJSON {
-										out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
-											Path:                repo + ":" + tag,
-											Digest:              string(descriptor.Digest),
-											NotaryV2Thumbprints: manifest.Annotations[annotationThumbprint][1 : len(manifest.Annotations[annotationThumbprint])-1],
-										})
-									} else {
-										tbl.AddRow(repo+":"+tag, string(descriptor.Digest), "✅", "❌")
+										// Found NotaryV2 signature
+										sigCount += 1
+
+										if outOpts.Mode == options.OutputModePretty {
+											if artifact.MediaType == registry.ImageManifestMediaType {
+												log.WithFields(logrus.Fields{
+													"repo":                      repo + ":" + tag,
+													"referrerMediaType":         referrer.MediaType,
+													"mediaType":                 manifest.MediaType,
+													"artifactType":              manifest.Config.MediaType,
+													"notaryV2EnvelopeMediaType": manifest.Layers[0].MediaType,
+												}).Trace("ImageManifest")
+											}
+											if artifact.MediaType == registry.ArtifactManifestMediaType {
+												log.WithFields(logrus.Fields{
+													"repo":                      repo + ":" + tag,
+													"referrerMediaType":         referrer.MediaType,
+													"notaryV2EnvelopeMediaType": artifact.Blobs[0].MediaType,
+												}).Trace("ArtifactManifest")
+											}
+										}
+
+										if outOpts.Mode == options.OutputModeJSON {
+											out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
+												Path:                repo + ":" + tag,
+												Digest:              string(descriptor.Digest),
+												NotaryV2Thumbprints: manifest.Annotations[registry.NotaryV2AnnotationThumbprint][1 : len(manifest.Annotations[registry.NotaryV2AnnotationThumbprint])-1],
+											})
+										} else {
+											tbl.AddRow(repo+":"+tag, string(descriptor.Digest), "✅", "❌")
+										}
 									}
 								}
 								return nil

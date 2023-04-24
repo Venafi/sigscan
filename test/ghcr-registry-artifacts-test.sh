@@ -1,0 +1,73 @@
+#!/bin/zsh
+
+# This script uses the slow() function from Brandon Mitchell available at 
+# https://github.com/sudo-bmitch/presentations/blob/main/oci-referrers-2023/demo-script.sh#L23
+# to simulate typing the commands
+
+opt_a=0
+opt_s=25
+
+while getopts 'ahs:' option; do
+  case $option in
+    a) opt_a=1;;
+    h) opt_h=1;;
+    s) opt_s="$OPTARG";;
+  esac
+done
+set +e
+shift `expr $OPTIND - 1`
+
+if [ $# -gt 0 -o "$opt_h" = "1" ]; then
+  echo "Usage: $0 [opts]"
+  echo " -h: this help message"
+  echo " -s bps: speed (default $opt_s)"
+  exit 1
+fi
+
+slow() {
+  echo -n "\$ $@" | pv -qL $opt_s
+  if [ "$opt_a" = "0" ]; then
+    read lf
+  else
+    echo
+  fi
+}
+
+SOURCE_IMAGE=ghcr.io/zosocanuck/sample-venafi-csp-image:signed
+SOURCE_REPO=ghcr.io/zosocanuck/sample-venafi-csp-image
+# Set the Cosign experimental flag
+export COSIGN_EXPERIMENTAL=1
+export COSIGN_PASSWORD=1234 
+
+# Generate and attach SBOM artifacts
+trivy image -f cyclonedx $SOURCE_IMAGE > ./sample-venafi-csp-image-cyclonedx.json
+trivy image -f spdx-json $SOURCE_IMAGE > ./sample-venafi-csp-image-spdx.json
+trivy image -f sarif $SOURCE_IMAGE > ./sample-venafi-csp-image.sarif
+oras attach --artifact-type application/vnd.cyclonedx --annotation "createdby=trivy" $SOURCE_IMAGE ./sample-venafi-csp-image-cyclonedx.json
+oras attach --artifact-type application/spdx+json --annotation "createdby=trivy" $SOURCE_IMAGE ./sample-venafi-csp-image-spdx.json
+oras attach --artifact-type application/sarif+json --annotation "createdby=trivy" $SOURCE_IMAGE ./sample-venafi-csp-image.sarif
+
+# Display artifact tree via regctl
+#regctl artifact tree $SOURCE_IMAGE
+
+# Sign CycloneDX SBOM
+SOURCE_CYCLONE_DX=`regctl artifact tree --filter-artifact-type application/vnd.cyclonedx $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
+cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_CYCLONE_DX} | echo
+
+# Sign SPDX SBOM
+SOURCE_SPDX=`regctl artifact tree --filter-artifact-type application/spdx+json $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
+cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SPDX} | echo
+
+# Sign Sarif SBOM
+SOURCE_SARIF=`regctl artifact tree --filter-artifact-type application/sarif+json $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
+cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SARIF} | echo
+
+# Verify SBOM cosign signature
+#cosign verify --key ./identities/signer1.pub ${SOURCE_REPO}@${SOURCE_CYCLONE_DX}
+#cosign verify --key ./identities/signer1.pub ${SOURCE_REPO}@${SOURCE_SPDX}
+#cosign verify --key ./identities/signer1.pub ${SOURCE_REPO}@${SOURCE_SARIF}
+
+# Clean up
+rm ./sample-venafi-csp-image-cyclonedx.json
+rm ./sample-venafi-csp-image-spdx.json
+rm ./sample-venafi-csp-image.sarif

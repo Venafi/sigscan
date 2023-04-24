@@ -30,6 +30,15 @@ const (
 	AWS_REGION = "us-east-1"
 )
 
+const (
+	NotaryV2ArtifactType         = "application/vnd.cncf.notary.signature"
+	NotaryV2AnnotationThumbprint = "io.cncf.notary.x509chain.thumbprint#S256"
+	ArtifactManifestMediaType    = "application/vnd.oci.artifact.manifest.v1+json"
+	ImageManifestMediaType       = "application/vnd.oci.image.manifest.v1+json"
+	CosignSigArtifactType        = "application/vnd.dev.cosign.artifact.sig.v1+json"
+	CosignSBOMArtifactType       = "application/vnd.dev.cosign.artifact.sbom.v1+json"
+)
+
 // Remote options struct.
 type Remote struct {
 	CACertFilePath    string
@@ -68,38 +77,16 @@ func (opts *Remote) tlsConfig() (*tls.Config, error) {
 	return config, nil
 }
 
-// isPlainHttp returns the plain http flag for a given registry.
-/*func (opts *Remote) isPlainHttp(registry string) bool {
-	host, _, _ := net.SplitHostPort(registry)
-	if host == "localhost" || registry == "localhost" {
-		return true
-	}
-	return opts.PlainHTTP
-}*/
-
 // Credential returns a credential based on the remote options.
 func (opts *Remote) Credential() auth.Credential {
 	return credential.Credential(opts.Username, opts.Password)
 }
 
-/*func (opts *Remote) NewRegistry(hostname string, common Common) (reg *oremote.Registry, err error) {
-	reg, err = remote.NewRegistry(hostname)
-	if err != nil {
-		return nil, err
-	}
-	hostname = reg.Reference.Registry
-	reg.PlainHTTP = opts.isPlainHttp(hostname)
-	if reg.Client, err = opts.authClient(hostname, common.Debug); err != nil {
-		return nil, err
-	}
-	return
-}*/
-
-func (opts *Remote) GetAuthClient(registry string, debug bool) (client *auth.Client, err error) {
+func (opts *Remote) GetAuthClient(registry string, debug bool) (client *auth.Client, cred auth.Credential, err error) {
 
 	config, err := opts.tlsConfig()
 	if err != nil {
-		return nil, err
+		return nil, cred, err
 	}
 
 	resolveDialContext := opts.resolveDialContext
@@ -134,7 +121,7 @@ func (opts *Remote) GetAuthClient(registry string, debug bool) (client *auth.Cli
 		client.Client.Transport = trace.NewTransport(client.Client.Transport)
 	}
 
-	cred := opts.Credential()
+	cred = opts.Credential()
 	if cred != auth.EmptyCredential {
 		client.Credential = func(ctx context.Context, s string) (auth.Credential, error) {
 			return cred, nil
@@ -142,7 +129,7 @@ func (opts *Remote) GetAuthClient(registry string, debug bool) (client *auth.Cli
 	} else {
 		store, err := credential.NewStore(opts.Configs...)
 		if err != nil {
-			return nil, err
+			return nil, cred, err
 		}
 		// For a user case with a registry from 'docker.io', the hostname is "registry-1.docker.io"
 		// According to the the behavior of Docker CLI,
@@ -154,11 +141,14 @@ func (opts *Remote) GetAuthClient(registry string, debug bool) (client *auth.Cli
 				}
 				return store.Credential(ctx, hostname)
 			}
+		} else if registry == GHCR {
+			client.Credential = store.Credential
+			cred, err = store.Credential(context.TODO(), GHCR)
+			return client, cred, err
 		} else {
 			client.Credential = store.Credential
 		}
 	}
-
 	return
 }
 

@@ -40,6 +40,12 @@ GOLANGCI_LINT_BIN = $(GOLANGCI_LINT_DIR)/golangci-lint
 sigscan: $(SRCS)
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o sigscan main.go
 
+.PHONY: cross
+cross:
+	$(foreach GOOS, $(PLATFORMS), \
+		$(foreach GOARCH, $(ARCHITECTURES), $(shell export GOOS=$(GOOS); export GOARCH=$(GOARCH); \
+	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o sigscan-$(GOOS)-$(GOARCH) main.go ))) \
+
 #####################
 # lint / test section
 #####################
