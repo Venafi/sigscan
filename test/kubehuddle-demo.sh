@@ -42,9 +42,14 @@ export COSIGN_PASSWORD=1234
 
 # Script
 
+clear
+
 ## Show sigscan is installed
 slow 'sigscan version'
 sigscan version
+
+slow
+clear
 
 ## Create SBOMs
 slow 'trivy image -f cyclonedx $SOURCE_IMAGE > ./sample-venafi-csp-image-cyclonedx.json'
@@ -55,6 +60,15 @@ trivy image -f spdx-json $SOURCE_IMAGE > ./sample-venafi-csp-image-spdx.json
 
 slow 'trivy image -f sarif $SOURCE_IMAGE > ./sample-venafi-csp-image.sarif'
 trivy image -f sarif $SOURCE_IMAGE > ./sample-venafi-csp-image.sarif
+
+slow
+clear
+
+slow 'regctl artifact tree $SOURCE_IMAGE'
+regctl artifact tree $SOURCE_IMAGE
+
+slow
+clear
 
 ## GHCR.io Example
 
@@ -68,45 +82,81 @@ oras attach --artifact-type application/spdx+json --annotation "createdby=trivy"
 slow 'oras attach --artifact-type application/sarif+json --annotation "createdby=trivy" $SOURCE_IMAGE ./sample-venafi-csp-image.sarif'
 oras attach --artifact-type application/sarif+json --annotation "createdby=trivy" $SOURCE_IMAGE ./sample-venafi-csp-image.sarif
 
+slow
+clear
+
 ### Sign SBOMs
-slow 'SOURCE_CYCLONE_DX=`regctl artifact tree --filter-artifact-type application/vnd.cyclonedx $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
-cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_CYCLONE_DX} | echo'
+slow 'SOURCE_CYCLONE_DX=`regctl artifact tree --filter-artifact-type application/vnd.cyclonedx $SOURCE_IMAGE --format "{{json .}}" | jq -r ".referrer | .[0].reference.Digest"`'
+slow 'cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_CYCLONE_DX} | echo'
 SOURCE_CYCLONE_DX=`regctl artifact tree --filter-artifact-type application/vnd.cyclonedx $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
 cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_CYCLONE_DX} | echo
 
 ### Sign SPDX SBOM
-slow 'SOURCE_SPDX=`regctl artifact tree --filter-artifact-type application/spdx+json $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
-cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SPDX} | echo'
+slow 'SOURCE_SPDX=`regctl artifact tree --filter-artifact-type application/spdx+json $SOURCE_IMAGE --format "{{json .}}" | jq -r ".referrer | .[0].reference.Digest"`'
+slow 'cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SPDX} | echo'
 SOURCE_SPDX=`regctl artifact tree --filter-artifact-type application/spdx+json $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
 cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SPDX} | echo
 
 ### Sign Sarif SBOM
-slow 'SOURCE_SARIF=`regctl artifact tree --filter-artifact-type application/sarif+json $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
-cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SARIF} | echo'
+slow 'SOURCE_SARIF=`regctl artifact tree --filter-artifact-type application/sarif+json $SOURCE_IMAGE --format "{{json .}}" | jq -r ".referrer | .[0].reference.Digest"`'
+slow 'cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SARIF} | echo'
 SOURCE_SARIF=`regctl artifact tree --filter-artifact-type application/sarif+json $SOURCE_IMAGE --format "{{json .}}" | jq -r '.referrer | .[0].reference.Digest'`
 cosign sign --tlog-upload=false --key ./identities/signer1.key --certificate ./identities/signer1.crt --registry-referrers-mode oci-1-1 ${SOURCE_REPO}@${SOURCE_SARIF} | echo
 
-### Scan
+slow
+clear
 
+### Scan
+slow 'sigscan repo ghcr.io --output pretty'
+sigscan repo ghcr.io --output pretty
+
+slow 'sigscan repo ghcr.io --output json | jq'
+sigscan repo ghcr.io --output json | jq
+
+slow
+clear
 
 ## OCI 1.1 Zot Registry Example
 slow 'docker run -d -p 5002:5000 --name zotregistrytest ghcr.io/project-zot/zot-linux-amd64:latest'
 docker run -d -p 5002:5000 --name zotregistrytest ghcr.io/project-zot/zot-linux-amd64:latest
 
+slow
+clear
+
 slow 'skopeo --insecure-policy copy --dest-tls-verify=false --src-tls-verify=false --multi-arch=all --format=oci docker://docker.io/alpine:latest docker://localhost:5002/net-monitor:v1'
 skopeo --insecure-policy copy --dest-tls-verify=false --src-tls-verify=false --multi-arch=all --format=oci docker://docker.io/alpine:latest docker://localhost:5002/net-monitor:v1
+
+slow
+clear
 
 slow 'notation cert generate-test $SIGNER'
 notation cert generate-test $SIGNER
 
+slow
+
 slow 'notation sign -k $SIGNER --signature-manifest=artifact localhost:5002/net-monitor:v1'
 notation sign -k $SIGNER --signature-manifest=artifact localhost:5002/net-monitor:v1
+
+slow
 
 slow 'COSIGN_PASSWORD=1234 cosign sign --tlog-upload=false --allow-http-registry --allow-insecure-registry --key identities/signer1.key --certificate identities/signer1.crt localhost:5002/net-monitor:v1'
 COSIGN_PASSWORD=1234 cosign sign --tlog-upload=false --allow-http-registry --allow-insecure-registry --key identities/signer1.key --certificate identities/signer1.crt localhost:5002/net-monitor:v1
 
+slow
+clear
+
 slow 'sigscan repo localhost:5002 --insecure --output pretty'
 sigscan repo localhost:5002 --insecure --output pretty
 
+slow
+clear
 
+slow 'sigscan repo ghcr.io --org jetstack --output pretty'
+sigscan repo ghcr.io --org jetstack --output pretty
 
+slow
+clear
+
+## Filesystem Example
+slow 'sigscan fs tempdir1/ tempdir2 --output json | jq'
+sigscan fs tempdir1/ tempdir2 --output json | jq

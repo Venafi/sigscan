@@ -20,6 +20,9 @@ sigscan.exe~
 .vscode
 .idea
 
+#asciinema stuff
+*.cast
+
 # fuzzing artifacts
 *.libfuzzer
 *fuzz.a

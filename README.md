@@ -115,7 +115,7 @@ These include:
 
 * The SBOM specification for storing SBOMs in a container registry
 
-sigscan provides experimental support for cyclonedx SBOM signatures via the cosign artifact signature mediatype `application/vnd.dev.cosign.artifact.sig.v1+json`
+sigscan provides experimental support for discovery of SBOM (see above for list of tested mediaTypes) signatures via the cosign artifact signature mediatype `application/vnd.dev.cosign.artifact.sig.v1+json`
 
 ## Authentication
 

@@ -79,11 +79,13 @@ func FetchCosignArtifactSignatures(ctx context.Context, ref name.Reference, ocir
 		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("unable to locate reference with artifactType %s", registry.CosignSigArtifactType),
 		}).Trace("NoManifests")
+		return err
 	} else if numResults > 1 {
 		// TODO: if there is more than 1 result.. what does that even mean?
 		log.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("there were a total of %d references with artifactType %s\n", numResults, registry.CosignSigArtifactType),
 		}).Trace("CosignArtifactError")
+		return err
 	}
 	// TODO: do this smarter using "created" annotations
 	lastResult := results[numResults-1]
