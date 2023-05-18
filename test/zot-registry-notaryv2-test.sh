@@ -2,6 +2,8 @@ PORT=5002
 IMAGE=net-monitor:v1
 SIGNER="wabbit-networks.io"
 
+export NOTATION_EXPERIMENTAL=1
+
 docker run -d -p $PORT:5000 --name zotregistrytest ghcr.io/project-zot/zot-linux-amd64:latest
 skopeo --insecure-policy copy --dest-tls-verify=false --src-tls-verify=false --multi-arch=all --format=oci docker://docker.io/alpine:latest docker://localhost:$PORT/$IMAGE
 

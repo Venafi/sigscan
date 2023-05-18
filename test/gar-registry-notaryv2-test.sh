@@ -2,6 +2,8 @@ PORT=5001
 IMAGE="us-west1-docker.pkg.dev/jetstack-ivan-wallis/iwallis-test/net-monitor:v1"
 SIGNER="wabbit-networks.io"
 
+export NOTATION_EXPERIMENTAL=1
+
 docker build -t $IMAGE https://github.com/wabbit-networks/net-monitor.git#main
 docker push $IMAGE
 

@@ -39,6 +39,7 @@ SOURCE_REPO=ghcr.io/zosocanuck/sample-venafi-csp-image
 # Set the Cosign experimental flag
 export COSIGN_EXPERIMENTAL=1
 export COSIGN_PASSWORD=1234 
+export NOTATION_EXPERIMENTAL=1
 
 # Script
 

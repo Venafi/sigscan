@@ -2,6 +2,8 @@ PORT=5001
 IMAGE=net-monitor:v1
 SIGNER="wabbit-networks.io"
 
+export NOTATION_EXPERIMENTAL=1
+
 docker run -d -p $PORT:5000 --name orasregistrytest ghcr.io/oras-project/registry:v1.0.0-rc.4
 docker build -t localhost:$PORT/namespace-test/$IMAGE https://github.com/wabbit-networks/net-monitor.git#main
 docker push localhost:$PORT/namespace-test/$IMAGE
