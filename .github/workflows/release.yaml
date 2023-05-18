@@ -73,5 +73,5 @@ jobs:
           draft: false
           body_path: CHANGELOG.md
           files: |
-            sigscan-*
+            artifacts/sigscan-*
             man/*
