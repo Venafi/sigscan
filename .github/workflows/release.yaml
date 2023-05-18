@@ -13,10 +13,19 @@ jobs:
         arch: [ amd64, arm64 ]
         include: 
           - os: macos-latest
-            SIGSCAN_TARGET: sigscan-${{ matrix.os }}-${{ matrix.arch }}
+            arch: amd64
+            SIGSCAN_TARGET: sigscan-darwin-amd64
+          - os: macos-latest
+            arch: arm64
+            SIGSCAN_TARGET: sigscan-darwin-arm64
           - os: ubuntu-latest
-            SIGSCAN_TARGET: sigscan-${{ matrix.os }}-${{ matrix.arch }}
+            arch: amd64
+            SIGSCAN_TARGET: sigscan-linux-amd64
+          - os: ubuntu-latest
+            arch: arm64
+            SIGSCAN_TARGET: sigscan-linux-arm64
           - os: windows-latest
+            arch: amd64
             SIGSCAN_TARGET: sigscan-windows-amd64.exe
         exclude:
           - os: windows-latest
