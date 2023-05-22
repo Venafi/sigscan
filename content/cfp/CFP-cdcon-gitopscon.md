@@ -3,6 +3,7 @@
 * Gaining better visibility into who signed your container images
 * Who Signed This Container Image?
 * Gain better visibility into container image signatures
+* Container Image Signatures: A comparison of available tools and frameworks
 
 #### Abstract
 
