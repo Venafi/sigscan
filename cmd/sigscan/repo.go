@@ -150,7 +150,7 @@ func parseRepoPath(opts *repositoryOptions, arg string) error {
 	return nil
 }
 
-func newRepoInspect(ctx context.Context) *cobra.Command {
+func newRepoInspect(_ context.Context) *cobra.Command {
 
 	var (
 		outOpts    *options.Output
@@ -350,46 +350,29 @@ func newRepoInspect(ctx context.Context) *cobra.Command {
 										return fmt.Errorf("error reading referrer: %s", err.Error())
 									}
 
-									/* Until OCI 1.1 is released Notaryv2 signatures may be accessible via Image Manifest or Artifact Manifest
+									/* Notaryv2 signatures may be accessible via Image Manifest
 									https://github.com/opencontainers/image-spec/blob/main/specs-go/v1/manifest.go
-									https://github.com/opencontainers/image-spec/blob/main/specs-go/v1/artifact.go
 									*/
-
-									var artifact *ocispec.Artifact = &ocispec.Artifact{}
 									var manifest *ocispec.Manifest = &ocispec.Manifest{}
-
-									err = json.Unmarshal(pulledBlob, artifact)
-									if err != nil {
-										return fmt.Errorf(err.Error())
-									}
 
 									err = json.Unmarshal(pulledBlob, manifest)
 									if err != nil {
 										return fmt.Errorf(err.Error())
 									}
 
-									if manifest.Config.MediaType == registry.NotaryV2ArtifactType || artifact.ArtifactType == registry.NotaryV2ArtifactType {
+									if manifest.Config.MediaType == registry.NotaryV2ArtifactType {
 
 										// Found NotaryV2 signature
 										sigCount += 1
 
 										if outOpts.Mode == options.OutputModePretty {
-											if artifact.MediaType == registry.ImageManifestMediaType {
-												log.WithFields(logrus.Fields{
-													"repo":                      repo + ":" + tag,
-													"referrerMediaType":         referrer.MediaType,
-													"mediaType":                 manifest.MediaType,
-													"artifactType":              manifest.Config.MediaType,
-													"notaryV2EnvelopeMediaType": manifest.Layers[0].MediaType,
-												}).Trace("ImageManifest")
-											}
-											if artifact.MediaType == registry.ArtifactManifestMediaType {
-												log.WithFields(logrus.Fields{
-													"repo":                      repo + ":" + tag,
-													"referrerMediaType":         referrer.MediaType,
-													"notaryV2EnvelopeMediaType": artifact.Blobs[0].MediaType,
-												}).Trace("ArtifactManifest")
-											}
+											log.WithFields(logrus.Fields{
+												"repo":                      repo + ":" + tag,
+												"referrerMediaType":         referrer.MediaType,
+												"mediaType":                 manifest.MediaType,
+												"artifactType":              manifest.Config.MediaType,
+												"notaryV2EnvelopeMediaType": manifest.Layers[0].MediaType,
+											}).Trace("ImageManifest")
 										}
 
 										if outOpts.Mode == options.OutputModeJSON {
