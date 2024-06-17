@@ -8,7 +8,7 @@ require (
 	github.com/docker/cli v23.0.3+incompatible
 	github.com/opencontainers/image-spec v1.1.0-rc2
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.1
 	golang.org/x/oauth2 v0.7.0
 	sigs.k8s.io/release-utils v0.7.4
 )
@@ -60,7 +60,7 @@ require (
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20220623050100-57a0ce2678a7 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
