@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.12.0
 	github.com/docker/cli v23.0.3+incompatible
 	github.com/opencontainers/image-spec v1.1.0-rc2
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	golang.org/x/oauth2 v0.7.0
 	sigs.k8s.io/release-utils v0.7.4
