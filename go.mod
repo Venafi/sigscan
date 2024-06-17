@@ -98,7 +98,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/certificate-transparency-go v1.1.4 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-github/v50 v50.2.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -199,7 +199,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/google/go-github/v49 v49.1.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/rodaine/table v1.1.0
+	github.com/rodaine/table v1.2.0
 	github.com/sassoftware/relic/v7 v7.5.4
 	github.com/sigstore/cosign/v2 v2.0.1
 	github.com/spf13/pflag v1.0.5 // indirect
