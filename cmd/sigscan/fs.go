@@ -32,7 +32,7 @@ type FSInspectOptions struct {
 	Dir string
 }
 
-func newFSInspect(ctx context.Context) *cobra.Command {
+func newFSInspect(_ context.Context) *cobra.Command {
 
 	var (
 		outOpts    *options.Output
@@ -52,7 +52,6 @@ func newFSInspect(ctx context.Context) *cobra.Command {
 
 			dirs := cmd.Flags().Args()
 
-			var err error
 			var out output.FSJSONOutput
 			out.FileSystem = strings.Join(dirs, ",")
 
@@ -192,10 +191,6 @@ func newFSInspect(ctx context.Context) *cobra.Command {
 					tbl.Print()
 				}
 				fmt.Printf("Found %d signatures out of %d entries\n", sigCount, entryCount)
-			}
-
-			if err != nil {
-				return fmt.Errorf("sigscan error: %s", err.Error())
 			}
 
 			return nil
