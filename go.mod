@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/oauth2 v0.21.0
-	sigs.k8s.io/release-utils v0.8.3
+	sigs.k8s.io/release-utils v0.8.4
 )
 
 require (
