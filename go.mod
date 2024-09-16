@@ -1,6 +1,7 @@
 module github.com/venafi/sigscan
 
 go 1.22.5
+toolchain go1.23.1
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.33
@@ -10,7 +11,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/oauth2 v0.23.0
-	sigs.k8s.io/release-utils v0.8.4
+	sigs.k8s.io/release-utils v0.8.5
 )
 
 require (
