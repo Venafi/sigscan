@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.1
 
 require (
-	github.com/aws/aws-sdk-go-v2/config v1.27.43
+	github.com/aws/aws-sdk-go-v2/config v1.28.0
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.27.2
 	github.com/docker/cli v27.3.1+incompatible
 	github.com/opencontainers/image-spec v1.1.0
