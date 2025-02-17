@@ -10,7 +10,7 @@ require (
 	github.com/docker/cli v27.5.1+incompatible
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	golang.org/x/oauth2 v0.26.0
 	sigs.k8s.io/release-utils v0.11.0
 )
