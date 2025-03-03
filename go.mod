@@ -7,7 +7,7 @@ toolchain go1.23.5
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.8
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.32.0
-	github.com/docker/cli v28.0.0+incompatible
+	github.com/docker/cli v28.0.1+incompatible
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
