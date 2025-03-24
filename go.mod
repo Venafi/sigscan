@@ -206,5 +206,5 @@ require (
 	github.com/sigstore/cosign/v2 v2.4.3
 	github.com/spf13/pflag v1.0.6 // indirect
 	oras.land/oras-go/v2 v2.5.0
-	sigs.k8s.io/controller-runtime v0.20.3
+	sigs.k8s.io/controller-runtime v0.20.4
 )
