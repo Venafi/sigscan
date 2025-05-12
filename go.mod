@@ -170,7 +170,7 @@ require (
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sync v0.13.0 // indirect
+	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/term v0.31.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
@@ -203,6 +203,6 @@ require (
 	github.com/sassoftware/relic/v7 v7.6.2
 	github.com/sigstore/cosign/v2 v2.5.0
 	github.com/spf13/pflag v1.0.6 // indirect
-	oras.land/oras-go/v2 v2.5.0
+	oras.land/oras-go/v2 v2.6.0
 	sigs.k8s.io/controller-runtime v0.20.4
 )
