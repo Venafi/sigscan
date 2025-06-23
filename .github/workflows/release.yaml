@@ -21,6 +21,8 @@ jobs:
             arch: amd64
             SIGSCAN_TARGET: sigscan-windows-amd64.exe
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     steps:
       - name: Install Go
         uses: actions/setup-go@v3
@@ -35,6 +37,8 @@ jobs:
           path: sigscan-*
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v3
       - name: Documentation Build
