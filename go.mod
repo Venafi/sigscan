@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.18
-	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.33.2
+	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.33.3
 	github.com/docker/cli v28.3.2+incompatible
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/sirupsen/logrus v1.9.3
