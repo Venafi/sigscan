@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.30.3
-	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.35.0
+	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.37.0
 	github.com/docker/cli v28.3.3+incompatible
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/sirupsen/logrus v1.9.3
@@ -53,11 +53,11 @@ require (
 	github.com/aliyun/credentials-go v1.3.2 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/avast/retry-go/v4 v4.6.1 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.37.2 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.38.1 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.3 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.2 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.4 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.40.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.0 // indirect
