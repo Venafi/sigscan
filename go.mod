@@ -8,7 +8,7 @@ require (
 	github.com/docker/cli v28.3.3+incompatible
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.1
 	golang.org/x/oauth2 v0.31.0
 	sigs.k8s.io/release-utils v0.12.1
 )
@@ -242,7 +242,7 @@ require (
 	github.com/rodaine/table v1.3.0
 	github.com/sassoftware/relic/v7 v7.6.2
 	github.com/sigstore/cosign/v2 v2.5.3
-	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	oras.land/oras-go/v2 v2.6.0
 	sigs.k8s.io/controller-runtime v0.22.1
 )
