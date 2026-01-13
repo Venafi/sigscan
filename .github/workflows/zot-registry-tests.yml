@@ -27,7 +27,9 @@ jobs:
           go-version: '1.23.4'
           check-latest: true
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v4.0.0
+        with:
+          cosign-release: 'v2.5.3'
       - name: Run zot and publish test image
         run: |
           docker run -d -p 5001:5000 --name zotregistry ghcr.io/project-zot/zot-linux-amd64:${{ env.ZOT_VERSION }}

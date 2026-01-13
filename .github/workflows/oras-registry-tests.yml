@@ -26,7 +26,9 @@ jobs:
           go-version: '1.23.4'
           check-latest: true
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v4.0.0
+        with:
+          cosign-release: 'v2.5.3'
       - name: Run oras project registry and publish test image
         run: |
           docker run -d -p 5002:5000 --name orasregistry ghcr.io/oras-project/registry:v1.0.0-rc.4
