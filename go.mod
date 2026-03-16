@@ -211,7 +211,7 @@ require (
 	github.com/google/go-containerregistry v0.21.2
 	github.com/google/go-github/v49 v49.1.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/rodaine/table v1.3.0
+	github.com/rodaine/table v1.3.1
 	github.com/sassoftware/relic/v7 v7.6.2
 	github.com/sigstore/cosign/v2 v2.6.2
 	github.com/spf13/pflag v1.0.10 // indirect
