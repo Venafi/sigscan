@@ -214,7 +214,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/rodaine/table v1.3.1
 	github.com/sassoftware/relic/v7 v7.6.2
-	github.com/sigstore/cosign/v2 v2.6.2
+	github.com/sigstore/cosign/v2 v2.6.3
 	github.com/spf13/pflag v1.0.10 // indirect
 	oras.land/oras-go/v2 v2.6.0
 	sigs.k8s.io/controller-runtime v0.23.3
