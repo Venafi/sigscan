@@ -293,7 +293,14 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 								return err
 							}
 
-							ref, _ := name.ParseReference(imagePath + ":" + tag)
+							ref, err := name.ParseReference(imagePath + ":" + tag)
+							if err != nil {
+								log.WithFields(logrus.Fields{
+									"image_path": imagePath,
+									"tag":        tag,
+								}).Trace("ParseReference: " + err.Error())
+								continue
+							}
 
 							log.WithFields(logrus.Fields{
 								"ref":       ref.String(),
