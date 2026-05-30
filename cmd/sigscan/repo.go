@@ -365,6 +365,14 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 										// Found NotaryV2 signature
 										sigCount += 1
 
+										// Validate manifest layers array before access
+										if len(manifest.Layers) == 0 {
+											log.WithFields(logrus.Fields{
+												"repo": repo + ":" + tag,
+											}).Debug("malformed manifest: no layers found")
+											continue
+										}
+
 										if outOpts.Mode == options.OutputModePretty {
 											log.WithFields(logrus.Fields{
 												"repo":                      repo + ":" + tag,
@@ -376,10 +384,18 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 										}
 
 										if outOpts.Mode == options.OutputModeJSON {
+											// Validate annotations before access
+											thumbprint, ok := manifest.Annotations[registry.NotaryV2AnnotationThumbprint]
+											if !ok || len(thumbprint) < 2 {
+												log.WithFields(logrus.Fields{
+													"repo": repo + ":" + tag,
+												}).Debug("malformed manifest: invalid thumbprint annotation")
+												continue
+											}
 											out.Signatures.Entries = append(out.Signatures.Entries, output.RepoJSONSignature{
 												Path:                repo + ":" + tag,
 												Digest:              string(descriptor.Digest),
-												NotaryV2Thumbprints: manifest.Annotations[registry.NotaryV2AnnotationThumbprint][1 : len(manifest.Annotations[registry.NotaryV2AnnotationThumbprint])-1],
+												NotaryV2Thumbprints: thumbprint[1 : len(thumbprint)-1],
 											})
 										} else {
 											tbl.AddRow(repo+":"+tag, string(descriptor.Digest), "✅", "❌")
