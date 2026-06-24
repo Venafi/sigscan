@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ecrpublic"
 	"github.com/docker/hub-tool/pkg/hub"
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v73/github"
 	"github.com/venafi/sigscan/internal/credential"
 	"github.com/venafi/sigscan/internal/crypto"
 	"github.com/venafi/sigscan/internal/trace"
