@@ -207,7 +207,7 @@ require (
 require (
 	github.com/docker/hub-tool v0.4.6
 	github.com/fatih/color v1.19.0
-	github.com/google/go-containerregistry v0.22.0
+	github.com/google/go-containerregistry v0.22.1
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/rodaine/table v1.3.1
 	github.com/sassoftware/relic/v7 v7.6.2
