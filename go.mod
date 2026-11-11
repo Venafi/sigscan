@@ -1,16 +1,24 @@
 module github.com/venafi/sigscan
 
-go 1.26.0
+go 1.27.3
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.33.4
 	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.47.0
 	github.com/docker/cli v29.8.0+incompatible
+	github.com/docker/hub-tool v0.4.6
+	github.com/fatih/color v1.19.0
+	github.com/google/go-containerregistry v0.22.1
 	github.com/google/go-github/v73 v73.0.0
 	github.com/opencontainers/image-spec v1.1.1
+	github.com/rodaine/table v1.3.1
+	github.com/sassoftware/relic/v7 v7.6.2
+	github.com/sigstore/cosign/v2 v2.6.5
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/oauth2 v0.37.0
+	oras.land/oras-go/v2 v2.6.2
+	sigs.k8s.io/controller-runtime v0.25.0
 	sigs.k8s.io/release-utils v0.12.4
 )
 
@@ -118,9 +126,10 @@ require (
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef // indirect
 	github.com/in-toto/attestation v1.2.0 // indirect
 	github.com/in-toto/in-toto-golang v0.11.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jedisct1/go-minisign v0.0.0-20230811132847-661be99b8267 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.19.2 // indirect
+	github.com/klauspost/compress v1.20.2 // indirect
 	github.com/letsencrypt/boulder v0.20260309.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -152,6 +161,7 @@ require (
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spf13/viper v1.21.0 // indirect
 	github.com/streadway/amqp v1.1.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
@@ -177,17 +187,17 @@ require (
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/mod v0.39.0 // indirect
-	golang.org/x/net v0.57.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/crypto v0.57.0 // indirect
+	golang.org/x/mod v0.41.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/grpc v1.82.1 // indirect
+	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -204,17 +214,4 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 	software.sslmate.com/src/go-pkcs12 v0.4.0 // indirect
-)
-
-require (
-	github.com/docker/hub-tool v0.4.6
-	github.com/fatih/color v1.19.0
-	github.com/google/go-containerregistry v0.22.1
-	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/rodaine/table v1.3.1
-	github.com/sassoftware/relic/v7 v7.6.2
-	github.com/sigstore/cosign/v2 v2.6.5
-	github.com/spf13/pflag v1.0.10 // indirect
-	oras.land/oras-go/v2 v2.6.2
-	sigs.k8s.io/controller-runtime v0.25.0
 )
