@@ -24,11 +24,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: '1.23.4'
       - uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
       - name: Go Build
         run: make sigscan && mv ./sigscan ./${{ matrix.SIGSCAN_TARGET }}
       - uses: actions/upload-artifact@v3
@@ -41,6 +41,10 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
       - name: Documentation Build
         run: go run ./hack/generate-manual
       - uses: actions/upload-artifact@v3
