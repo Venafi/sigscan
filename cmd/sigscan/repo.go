@@ -3,6 +3,7 @@ package sigscan
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"runtime"
 	"runtime/debug"
@@ -188,7 +189,7 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 			reg, err := oras.NewRegistry(opts.hostname)
 
 			if err != nil {
-				return fmt.Errorf(err.Error())
+				return errors.New(err.Error())
 			}
 			//reg.RepositoryListPageSize = 100
 			//reg.Client = client
@@ -198,7 +199,7 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 
 			reg.Client, cred, err = rem.GetAuthClient(host, false)
 			if err != nil {
-				return fmt.Errorf(err.Error())
+				return errors.New(err.Error())
 			}
 
 			// GHCR can use docker credential helper otherwise credential can be supplied via arguments
@@ -364,7 +365,7 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 
 									err = json.Unmarshal(pulledBlob, manifest)
 									if err != nil {
-										return fmt.Errorf(err.Error())
+										return errors.New(err.Error())
 									}
 
 									if manifest.Config.MediaType == registry.NotaryV2ArtifactType {
@@ -423,7 +424,7 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 						return nil
 					})
 					if err != nil {
-						return fmt.Errorf(err.Error())
+						return errors.New(err.Error())
 					}
 
 				}
@@ -433,7 +434,7 @@ func newRepoInspect(_ context.Context) *cobra.Command {
 			if outOpts.Mode == options.OutputModeJSON {
 				m, err := json.Marshal(out)
 				if err != nil {
-					return fmt.Errorf(err.Error())
+					return errors.New(err.Error())
 				}
 
 				fmt.Println(string(m))
