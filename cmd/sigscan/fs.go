@@ -182,7 +182,7 @@ func newFSInspect(_ context.Context) *cobra.Command {
 			if outOpts.Mode == options.OutputModeJSON {
 				m, err := json.Marshal(out)
 				if err != nil {
-					return fmt.Errorf(err.Error())
+					return errors.New(err.Error())
 				}
 
 				fmt.Println(string(m))

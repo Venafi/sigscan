@@ -3,7 +3,7 @@ package registry
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
+	"errors"
 	"net"
 	"net/http"
 	"strings"
@@ -172,18 +172,18 @@ func FindRepositories(ctx context.Context, org string, namespace string, usernam
 		if org != "" {
 			packages, _, err = c.Organizations.ListPackages(context.Background(), org, pkgOpts)
 			if err != nil {
-				return fmt.Errorf(err.Error())
+				return errors.New(err.Error())
 			}
 
 		} else {
 			packages, _, err = c.Users.ListPackages(context.Background(), "", pkgOpts)
 			if err != nil {
-				return fmt.Errorf(err.Error())
+				return errors.New(err.Error())
 			}
 		}
 
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return errors.New(err.Error())
 		}
 
 		var repos []string
@@ -201,7 +201,7 @@ func FindRepositories(ctx context.Context, org string, namespace string, usernam
 			hub.WithHubToken(token),
 		)
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return errors.New(err.Error())
 		}
 		var repos []string
 
@@ -213,7 +213,7 @@ func FindRepositories(ctx context.Context, org string, namespace string, usernam
 
 		rep, _, err := hubClient.GetRepositories(account)
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return errors.New(err.Error())
 		}
 
 		for _, r := range rep {
@@ -232,13 +232,13 @@ func FindRepositories(ctx context.Context, org string, namespace string, usernam
 		// Per https://github.com/aws/aws-cli/issues/5917, ECR-public actions are only supported in us-east-1
 		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(AWS_REGION))
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return errors.New(err.Error())
 		}
 
 		svc := ecrpublic.NewFromConfig(cfg)
 		rep, err := svc.DescribeRepositories(context.Background(), &ecrpublic.DescribeRepositoriesInput{})
 		if err != nil {
-			return fmt.Errorf(err.Error())
+			return errors.New(err.Error())
 		}
 
 		for _, r := range rep.Repositories {
@@ -261,7 +261,7 @@ func FindRepositories(ctx context.Context, org string, namespace string, usernam
 
 			})
 			if err != nil {
-				return fmt.Errorf((err.Error()))
+				return errors.New(err.Error())
 			}
 
 			return fn(repos)
