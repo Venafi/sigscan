@@ -9,6 +9,7 @@ require (
 	github.com/docker/hub-tool v0.4.6
 	github.com/fatih/color v1.19.0
 	github.com/google/go-containerregistry v0.22.1
+	github.com/docker/cli v29.9.3+incompatible
 	github.com/google/go-github/v73 v73.0.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/rodaine/table v1.4.1
