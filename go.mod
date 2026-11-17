@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.33.18
-	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.47.0
+	github.com/aws/aws-sdk-go-v2/service/ecrpublic v1.47.12
 	github.com/docker/cli v29.9.3+incompatible
 	github.com/docker/hub-tool v0.4.6
 	github.com/fatih/color v1.19.0
